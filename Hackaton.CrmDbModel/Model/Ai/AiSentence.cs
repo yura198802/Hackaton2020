@@ -9,6 +9,9 @@ namespace Hackaton.CrmDbModel.Model.Ai
         public int? DocumentLoaderId { get; set; }
         [ForeignKey("DocumentLoaderId")]
         public DocumentLoader DocumentLoader { get; set; }
+        public int? DocumentItemId { get; set; }
+        [ForeignKey("DocumentItemId")]
+        public DocumentItem DocumentItem { get; set; }
         public string Text { get; set; }
     }
 }

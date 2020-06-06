@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
 using Hackaton.CrmDbModel.Model;
+using Hackaton.CrmDbModel.Model.LoadDocument;
 using Hackaton.UniversalAdapter.Adapter.AiEngine.Classes.AIParseEngine.Interfaces;
 using Hackaton.UniversalAdapter.Adapter.AiEngine.Interface;
-using Microsoft.EntityFrameworkCore;
 
 namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Classes
 {
@@ -19,15 +19,22 @@ namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Classes
             _iAiSentence = iAiSentence;
         }
 
-        public async Task<bool> Parse(string text)
+        public async Task<bool> Parse(string text, DocumentLoader documentLoader, DocumentItem documentItem)
         {
-            var models = await _loaderInfoAotRu.LoaderAotModel(text);
-            await _iAiSentence.SaveDescription(models);
-            foreach (var model in models)
+            var mass = text.Trim('.').Split('.');
+            foreach (var sentence in mass)
             {
-                await _iAiSentence.Create(model);
-                await _wordDbContext.SaveChangesAsync();
+                var models = await _loaderInfoAotRu.LoaderAotModel(sentence);
+                await _iAiSentence.SaveDescription(models);
+                foreach (var model in models)
+                {
+                    var aiSentence = await _iAiSentence.Create(model);
+                    aiSentence.DocumentLoader = documentLoader;
+                    aiSentence.DocumentItem = documentItem;
+                }
             }
+
+            await _wordDbContext.SaveChangesAsync();
             return true;
         }
 

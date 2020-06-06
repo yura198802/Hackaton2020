@@ -62,7 +62,7 @@ namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Model
         [JsonProperty("str")]
         public string Str { get; set; }
 
-        public AiWord AiWord { get; set; }
+        public CrmDbModel.Model.Ai.AiWord AiWord { get; set; }
     }
 
     //public enum Descr { Empty, ГенитИг, Оборот, ОднорИг, Пг, ПрилСущ };

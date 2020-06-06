@@ -13,5 +13,6 @@ namespace Hackaton.CrmDbModel.Model.LoadDocument
         [ForeignKey("DocumentLoaderId")]
         public DocumentLoader DocumentLoader { get; set; }
         public int? DocumentLoaderId { get; set; }
+        public bool? IsRootItem { get; set; }
     }
 }

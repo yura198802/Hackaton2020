@@ -31,7 +31,7 @@ namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Classes.AIParseEngine.Class
                 foreach (var word in model.Words)
                 {
                     result += word.Str + " ";
-                    var aiWord = new AiWord();
+                    var aiWord = new CrmDbModel.Model.Ai.AiWord();
                     aiWord.AiSentence = aiSentence;
                     aiWord.Text = word.Str;
                     aiWord.NormalizeText = word.Homonyms[0];
@@ -43,10 +43,8 @@ namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Classes.AIParseEngine.Class
                 }
                 aiSentence.Text = result;
                 _wordDbContext.Add(aiSentence);
-                foreach (var modelVariant in model.Variants)
-                {
-                    await _aiGroup.ParseGroups(_wordDbContext, modelVariant, model.Words.ToList(), aiSentence);
-                }
+                await _aiGroup.ParseGroups(_wordDbContext, model.Variants[0], model.Words.ToList(), aiSentence);
+                
                 return aiSentence;
             }
             catch(Exception ex)

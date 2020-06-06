@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hackaton.AI.EngineAI.Interfaces;
+using Hackaton.CrmDbModel.ModelDto.AiWord;
 using Microsoft.AspNetCore.Mvc;
 using Monica.Core.Controllers;
 
@@ -30,10 +32,15 @@ namespace Hackaton.WebApi.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [ProducesResponseType(403)]
-        public async Task<IActionResult> RecogonizeMsg(string message)
+        public async Task<IActionResult> GetPredicats(int userId)
         {
-            return Tools.CreateResult(true, "", _categotyClassifiction.GetCategoryMessage(message));
+            return Tools.CreateResult(true, "", new List<PredicatDto>
+                { new PredicatDto()
+                {
+                    Title = "ЗНАТЬ"
+                } });
         }
+
 
     }
 }

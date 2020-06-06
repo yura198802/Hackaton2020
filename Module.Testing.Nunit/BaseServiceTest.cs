@@ -7,6 +7,8 @@ using Autofac.Extensions.DependencyInjection;
 using Hackaton.CrmDbModel;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Module.Testing.NUnit;
+using Monica.Core.Constants;
 using Monica.Core.DataBaseUtils;
 using Monica.Core.Utils;
 using Moq;
@@ -30,7 +32,8 @@ namespace Module.Testing.Nunit
             var configiguration = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
             var connectionString = configiguration.ConnectionStrings.ConnectionStrings["MySqlDatabase"].ConnectionString;
             var connectionStringIs4 = configiguration.ConnectionStrings.ConnectionStrings["MySqlDatabaseIS4"].ConnectionString;
-
+            GlobalSettingsApp.CurrentAppDirectory =
+                Path.GetDirectoryName(Assembly.GetAssembly(typeof(BaseEfTest)).Location);
             mockDataBaseMain.Setup(main => main.ConntectionString).Returns(connectionString);
             mockDataBaseIs4.Setup(main => main.ConntectionString).Returns(connectionStringIs4);
             var events = new OnStartupEvents();

@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="5.1.2" />
+    <PackageReference Include="Dapper" Version="2.0.35" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="Monica.Core" Version="1.0.99" />
     <PackageReference Include="RestSharp" Version="106.11.4" />

@@ -1,23 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Hackaton.CrmDbModel.Model.LoadDocument;
 
 namespace Hackaton.CrmDbModel.ModelDto.Parser
 {
     public class FileRtf
     {
+        /// <summary>
+        /// наименование док-та
+        /// </summary>
         public string Caption { get; set; }
-        public string FileSize { get; set; }
+        /// <summary>
+        /// вид документа
+        /// </summary>
+        public string VidDoc { get; set; }
+        /// <summary>
+        /// Уточнение вида док-та
+        /// </summary>
+        public string Category { get; set; }
+        //public string FileSize { get; set; }
         //TODO и другие свойства
 
         public List<ItemDto> Items { get; set; }
+        public int FileSize { get; set; }
     }
 
     public class ItemDto
     {
-        ItemDto ParentId { get; set; }
+        public ItemDto ParentId { get; set; }
         public string TextContent { get; set; }
         public string  Number { get; set; }
+        public bool IsRoot { get; set; }
+        public DocumentItem DocumentItem { get; set; }
 
         public void Parent()
         {
