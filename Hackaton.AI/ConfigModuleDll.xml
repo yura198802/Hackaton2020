@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModulesDll>
+  <ModuleDll name="Hackaton.AI" path="Hackaton.AI.dll" isMvc="false"/>
+  <ModuleDll name="Accord.MachineLearning.dll" path="Accord.MachineLearning.dll" isMvc="false"/>
+  <ModuleDll name="Accord.dll" path="Accord.dll" isMvc="false"/>
+  <ModuleDll name="Accord.Math.Core.dll" path="Accord.Math.Core.dll" isMvc="false"/>
+  <ModuleDll name="Accord.Math.dll" path="Accord.Math.dll" isMvc="false"/>
+  <ModuleDll name="Accord.Statistics.dll" path="Accord.Statistics.dll" isMvc="false"/>
+</ModulesDll>
+
+

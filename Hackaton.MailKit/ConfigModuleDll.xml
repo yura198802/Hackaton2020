@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModulesDll>
+  <ModuleDll name="Hackaton.MailKit" path="Hackaton.MailKit.dll" isMvc="false"/>
+  <ModuleDll name="MailKit" path="MailKit.dll" isMvc="false"/>
+  <ModuleDll name="MimeKit" path="MimeKit.dll" isMvc="false"/>
+  <ModuleDll name="BouncyCastle.Crypto" path="BouncyCastle.Crypto.dll" isMvc="false"/>
+</ModulesDll>

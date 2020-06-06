@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ModulesDll>
+  <ModuleDll name="Hackaton.Universal" path="Hackaton.Universal.dll" isMvc="false"/>
+</ModulesDll>
+
+

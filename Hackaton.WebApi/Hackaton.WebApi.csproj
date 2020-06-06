@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <Platforms>AnyCPU;x64</Platforms>
+    <Configurations>Debug;Release;Anonym</Configurations>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\bin\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Anonym|AnyCPU'">
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE;ANONYM</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\bin\</OutputPath>
+    <DocumentationFile>..\bin\Monica.Crm.WebApi.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutputPath>..\bin\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutputPath>..\bin\</OutputPath>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Anonym|x64'">
+    <OutputPath>..\bin\</OutputPath>
+    <DefineConstants>TRACE;ANONYM</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="5.1.2" />
+    <PackageReference Include="IdentityModel" Version="3.10.10" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Monica.Core" Version="1.0.99" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hackaton.AI\Hackaton.AI.csproj" />
+    <ProjectReference Include="..\Hackaton.UniversalAdapter\Hackaton.UniversalAdapter.csproj" />
+    <ProjectReference Include="..\Hackaton.Universal\Hackaton.Universal.csproj" />
+    <ProjectReference Include="..\Hackaton.CrmDbModel\Hackaton.CrmDbModel.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ConfigModuleDll.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Monica.Crm.WebApi.dll.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Adapter\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+</Project>
