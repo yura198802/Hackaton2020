@@ -1,7 +1,12 @@
-﻿namespace Hackaton.UniversalAdapter.Adapter.Parser
+﻿using System.Collections.Generic;
+
+namespace Hackaton.UniversalAdapter.Adapter.Parser
 {
     public interface IReader
     {
-        string ReadDoc(string path);
+        /// <summary>
+        /// Список, хранит в себе строки считанного файла
+        /// </summary>
+        List<string> Lines { get; set; }
     }
 }

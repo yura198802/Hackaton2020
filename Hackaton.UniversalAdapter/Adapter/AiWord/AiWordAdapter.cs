@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Hackaton.CrmDbModel.Model;
+using Hackaton.CrmDbModel.Model.LoadDocument;
 using Hackaton.CrmDbModel.ModelDto.AiWord;
-using Microsoft.EntityFrameworkCore;
 using Monica.Core.DataBaseUtils;
 using MySql.Data.MySqlClient;
-using System.Linq;
-
 
 namespace Hackaton.UniversalAdapter.Adapter.AiWord
 {
@@ -22,106 +22,221 @@ namespace Hackaton.UniversalAdapter.Adapter.AiWord
             _wordDbContext = wordDbContext;
         }
 
-        public async Task<IEnumerable<PredicatDto>> GetPredicatDtos()
+        public async Task<IEnumerable<InfoDocument>> GetInfoDocument(int userId)
         {
-            using (var connection = new MySqlConnection(_dataBaseMain.ConntectionString))
-            {
-                return await connection.QueryAsync<PredicatDto>(SqlQueryHelper.QueryGlagol);
-            }
+            return (await GetDocumentCategoryDol(userId)).Union(await GetDocumentCategoryOtv(userId));
         }
 
-
-        public async Task<IEnumerable<PredicatEntityDto>> GetPredicatEntities(string paramQuery)
+        public List<InfoDocument> GetDocumentInfo()
         {
             try
             {
-                CrmDbModel.Model.Ai.AiWord word = await _wordDbContext.AiWord.FirstOrDefaultAsync(f => f.NormalizeText == paramQuery);
-                if (word == null)
-                    throw new System.Exception("Не удалось получить слово");
-                CrmDbModel.Model.Ai.AiSentence aiSentence = word.AiSentence;
-                var aiGroupWordNowSentences = _wordDbContext.AiGroup.Where(f => f.AiSentence == aiSentence).
-                    Where(f => f.Last - f.Start < 3).
-                    Distinct();
-                var aiGroupWordParentSentences = _wordDbContext.AiSentence.Where(f => f.DocumentItem.Parent == aiSentence.DocumentItem);
-                foreach (var sentences in aiGroupWordParentSentences)
+
+                var result = new List<InfoDocument>();
+                var loaders = _wordDbContext.DocumentItem;
+                foreach (var loader in loaders.ToList())
                 {
-                    aiGroupWordNowSentences.Union(_wordDbContext.AiGroup.Where(f => f.AiSentence == sentences).
-                        Where(f => f.Last - f.Start < 3).
-                        Distinct());
-                }
-                aiGroupWordNowSentences = aiGroupWordNowSentences.Where(f => f.AiDescription.Name == "генит_иг" ||
-                                                                           f.AiDescription.Name == "однор_иг" ||
-                                                                           f.AiDescription.Name == "прил_сущ");
-                List<PredicatEntityDto> result = new List<PredicatEntityDto>();
-                foreach(var item in aiGroupWordNowSentences)
-                {
-                    PredicatEntityDto predicatEntityDto = new PredicatEntityDto();
-                    var listWord = _wordDbContext.AiGroupWord.Where(f => f.AiGroup == item);
-                    foreach(var w in listWord)
-                    {
-                        predicatEntityDto.Title += w + " ";
-                    }
-                    result.Add(predicatEntityDto);
+                    if (loader.TextContent != "Общие положения")
+                        continue;
+                    result.Add(CreateInfoDocument(loader));
                 }
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
-                throw new System.Exception("Не удалось получить сущности");
+                throw new Exception("Не удалось распрасить инструкцию, возможно этот формат не описан.");
             }
+        }
+        public InfoDocument CreateInfoDocument(DocumentItem rootDocItem)
+        {
+            InfoDocument infoDocument = new InfoDocument();
+            infoDocument.Title = rootDocItem.TextContent;
 
 
+            InfoCategoty infoCategoty1 = CreateCategory(rootDocItem, "Категория", "1");
+            InfoCategoty infoCategoty2 = CreateCategory(rootDocItem, "Образование и стаж", "2");
+            InfoCategoty infoCategoty3 = CreateCategory(rootDocItem, "Назначение на должность", "3");
+            InfoCategoty infoCategoty4 = CreateCategory(rootDocItem, "Требования к знаниям", "4");
+            InfoCategoty infoCategoty5 = CreateCategory(rootDocItem, "Подчинение", "5");
+            InfoCategoty infoCategoty6 = CreateCategory(rootDocItem, "Правила замещения", "6");
 
+            infoDocument.Items = new List<InfoCategoty>();
+            infoDocument.Items.Add(infoCategoty1);
+            infoDocument.Items.Add(infoCategoty2);
+            infoDocument.Items.Add(infoCategoty3);
+            infoDocument.Items.Add(infoCategoty4);
+            infoDocument.Items.Add(infoCategoty5);
+            infoDocument.Items.Add(infoCategoty6);
 
+            return infoDocument;
 
-            return null;
+        }
+        protected InfoCategoty CreateCategory(DocumentItem rootDocItem, string title, string number)
+        {
+            try
+            {
+                InfoCategoty infoCategoty = new InfoCategoty();
+                infoCategoty.Title = title; //"Категория";
+                infoCategoty.Items = new List<InfoItem>();
+                var potentialRoot = _wordDbContext.DocumentItem.FirstOrDefault(f => f.Number == number && f.Parent == rootDocItem);
+                infoCategoty.Items.Add(CreateItem(rootDocItem, number));
+                var innersCategory = _wordDbContext.DocumentItem.Where(f => f.Parent == potentialRoot);
+                if (innersCategory != null && innersCategory.Count() > 0)
+                {
+                    int index = 0;
+                    foreach (var item in innersCategory)
+                    {
+                        infoCategoty.Items.Add(CreateItem(potentialRoot, number + "." + (++index).ToString()));
+                    }
+                }
+                return infoCategoty;
+            }
+            catch { return new InfoCategoty() { Items = new List<InfoItem>(), Title = title }; }
+        }
+
+        protected InfoItem CreateItem(DocumentItem rootDocItem, string number)
+        {
+            InfoItem infoItem = new InfoItem();
+            if (_wordDbContext.DocumentItem.FirstOrDefault(f => f.Number == number && f.Parent == rootDocItem) == null)
+            {
+                infoItem.Title = "Тут должно быть что-то, но в инструкции ничего нет";
+                infoItem.ProfName = new List<string>();
+                if (_wordDbContext.DocumentLoader.FirstOrDefault(f => f.Id == rootDocItem.DocumentLoaderId) == null)
+                {
+                    infoItem.ProfName.Add("Не определилось должность");
+                }
+                else
+                    infoItem.ProfName.Add(_wordDbContext.DocumentLoader.FirstOrDefault(f => f.Id == rootDocItem.DocumentLoaderId).ProfName);
+            }
+            else
+            {
+                infoItem.Title = _wordDbContext.DocumentItem.FirstOrDefault(f => f.Number == number && f.Parent == rootDocItem).TextContent;
+                infoItem.ProfName = new List<string>();
+
+                if (_wordDbContext.DocumentLoader.FirstOrDefault(f => f.Id == rootDocItem.DocumentLoaderId) == null)
+                {
+                    infoItem.ProfName.Add("Не определилось должность");
+                }
+                else
+                    infoItem.ProfName.Add(_wordDbContext.DocumentLoader.FirstOrDefault(f => f.Id == rootDocItem.DocumentLoaderId).ProfName);
+            }
+            return infoItem;
+        }
+
+        private async Task<IEnumerable<InfoDocument>> GetDocumentCategoryDol(int userId)
+        {
+            using (var connection = new MySqlConnection(_dataBaseMain.ConntectionString))
+            {
+                var docs = new List<InfoDocument>();
+                var queryRoot = await connection.QueryAsync<InfoRoot>(SqlQueryHelper.QueryGlagol, new { userId });
+                foreach (var item in queryRoot.GroupBy(g => g.Razdel))
+                {
+                    var doc = new InfoDocument();
+                    doc.Title = item.Key;
+                    doc.Items = new List<InfoCategoty>();
+                    foreach (var root in item.GroupBy(g => g.Category))
+                    {
+                        var itemCategory = new InfoCategoty();
+                        itemCategory.Title = root.Key;
+                        itemCategory.Items = new List<InfoItem>();
+                        foreach (var infoRoot in root.GroupBy(g => g.Text))
+                        {
+                            var itemLine = new InfoItem();
+                            itemLine.Title = FirstLetterToUpper(infoRoot.Key.Trim(',', ' '));
+                            itemLine.ProfName = infoRoot.Select(s => s.ProfName).ToList();
+                            itemCategory.Items.Add(itemLine);
+                        }
+                        doc.Items.Add(itemCategory);
+                    }
+                    docs.Add(doc);
+                }
+
+                return docs;
+            }
+        }
+
+        public string FirstLetterToUpper(string str)
+        {
+            if (str == null)
+                return null;
+
+            if (str.Length > 1)
+                return char.ToUpper(str[0]) + str.Substring(1);
+
+            return str.ToUpper();
+        }
+
+        private async Task<IEnumerable<InfoDocument>> GetDocumentCategoryOtv(int userId)
+        {
+            using (var connection = new MySqlConnection(_dataBaseMain.ConntectionString))
+            {
+                var docs = new List<InfoDocument>();
+                var queryRoot = await connection.QueryAsync<InfoRoot>(SqlQueryHelper.Query, new { userId });
+                foreach (var item in queryRoot.GroupBy(g => g.Razdel))
+                {
+                    var doc = new InfoDocument();
+                    doc.Title = item.Key;
+                    doc.Items = new List<InfoCategoty>();
+                    foreach (var root in item.GroupBy(g => g.Text.ToLower().Contains("уголов") ? "Уголовня ответственность" : "Иная ответственность"))
+                    {
+                        var itemCategory = new InfoCategoty();
+                        itemCategory.Title = root.Key;
+                        itemCategory.Items = new List<InfoItem>();
+                        foreach (var infoRoot in root.GroupBy(g => g.Text))
+                        {
+                            var itemLine = new InfoItem();
+                            itemLine.Title = infoRoot.Key;
+                            itemLine.ProfName = infoRoot.Select(s => s.ProfName).ToList();
+                            itemCategory.Items.Add(itemLine);
+                        }
+                        doc.Items.Add(itemCategory);
+                    }
+                    docs.Add(doc);
+                }
+
+                return docs;
+            }
         }
 
 
+
+        class InfoRoot
+        {
+            public string Category { get; set; }
+            public string Razdel { get; set; }
+            public string Text { get; set; }
+            public string ProfName { get; set; }
+        }
 
     }
 
 
+
+
     public class SqlQueryHelper
     {
-        public const string QueryGlagol = @"SELECT qq.NormalizeText , MAX(qq.Descript) as Descript, MAX(qq.Id) FROM 
-                                          (SELECT w.NormalizeText, MAX(a2.Name) AS Descript, MAX(a1.Id) AS Id FROM aigroup a   
-                                          JOIN aigroupword a1 ON a.Id = a1.AiGroupId
-                                          JOIN aisentence s ON s.id = a.AiSentenceId
-                                          JOIN aiword w ON w.Id = a1.AiWordId
-                                          JOIN aidescription a2 ON a.AiDescriptionId = a2.Id
-                                          JOIN (SELECT ww.Grm FROM aiword ww 
-                                          WHERE ww.Grm LIKE 'С %' OR ww.Grm LIKE 'Г%' OR ww.Grm LIKE 'Н%' OR ww.Grm LIKE 'ПРИЧ%' OR ww.Grm LIKE 'КР_ПРИЛ%' GROUP BY ww.Grm) grm ON grm.Grm = w.Grm
-                                          WHERE a2.Name = 'sp' GROUP BY w.NormalizeText
-                                        UNION ALL
-                                        SELECT w.NormalizeText, MAX(a2.Name) AS Descript, MAX(a1.Id) AS Id FROM aigroup a   
-                                          JOIN aigroupword a1 ON a.Id = a1.AiGroupId
-                                          JOIN aisentence s ON s.id = a.AiSentenceId
-                                          JOIN aiword w ON w.Id = a1.AiWordId
-                                          JOIN aidescription a2 ON a.AiDescriptionId = a2.Id
-                                          JOIN (SELECT ww.Grm FROM aiword ww 
-                                          WHERE ww.Grm LIKE 'Г%' OR ww.Grm LIKE 'КР_ПРИЛ%' GROUP BY ww.Grm) grm ON grm.Grm = w.Grm
-                                          WHERE a2.Name IN ('гл_личн', 'кр_прил')  GROUP BY w.NormalizeText  ORDER BY 3) AS qq  GROUP BY 1";
+        public const string QueryGlagol = @"SELECT w.NormalizeText AS Category, item.TextContent AS Razdel, s.Text, doc.ProfName FROM aigroup a   
+  JOIN aigroupword a1 ON a.Id = a1.AiGroupId
+  JOIN aisentence s ON s.id = a.AiSentenceId
+  JOIN aiword w ON w.Id = a1.AiWordId
+  JOIN aidescription a2 ON a.AiDescriptionId = a2.Id
+  JOIN (SELECT u.DocumentLoaderId, ddd.ProfName FROM userdocument u 
+                JOIN documentloader ddd ON ddd.Id = u.DocumentLoaderId
+                WHERE u.UserId = @userId GROUP BY 1) AS doc ON doc.DocumentLoaderId = s.DocumentLoaderId
+  JOIN (SELECT dChild.Id, d.TextContent FROM documentitem d 
+          JOIN documentitem dChild ON dChild.ParagraphId = d.Id WHERE d.IsRootItem AND TRIM(d.TextContent) IN ('Должностные обязанности','Права')) AS item ON item.Id = s.DocumentItemId
+  JOIN (SELECT ww.Grm FROM aiword ww 
+  WHERE ww.Grm LIKE 'Г%' OR ww.Grm LIKE 'КР_ПРИЛ%' OR ww.Grm LIKE 'С%' GROUP BY ww.Grm) grm ON grm.Grm = w.Grm
+  WHERE a2.Name IN ('гл_личн', 'кр_прил', 'инф' )  GROUP BY s.Id,doc.ProfName  ORDER BY w.NormalizeText;";
 
 
-        public const string Query = @"MaxSELECT w.NormalizeText, a.Last, a.Start FROM aigroup a
-                                            JOIN aigroupword a1 ON a.Id = a1.AiGroupId
-                                            JOIN aisentence s ON s.id = a.AiSentenceId
-                                            JOIN aiword w ON w.Id = a1.AiWordId
-                                            JOIN (SELECT IFNULL(sCh.Id, ss.Id) AS IdCh, ss.Id FROM aisentence ss
-                                            JOIN aigroup gg ON gg.AiSentenceId = ss.Id
-                                            JOIN aigroupword gw ON gw.AiGroupId = gg.Id
-                                            JOIN documentitem d ON d.Id = ss.DocumentItemId
-                                            JOIN aiword ww ON ww.Id = gw.AiWordId
-                                            LEFT JOIN documentitem dd ON dd.ParentId = d.Id
-                                            LEFT JOIN aisentence sCh ON sCh.DocumentItemId = dd.Id
-                                            LEFT JOIN aigroup ggCh ON ggCh.AiSentenceId = sCh.Id
-                                            LEFT JOIN aigroupword gwCh ON gwCh.AiGroupId = ggCh.Id
-                                            LEFT JOIN aiword wwCh ON wwCh.Id = gwCh.AiWordId
-                                            WHERE ww.NormalizeText = @paramQuery GROUP BY 1,2) AS ss ON s.Id in (ss.IdCh)
-                                            JOIN aidescription a2 ON a.AiDescriptionId = a2.Id AND a2.Name IN ('генит_иг', 'однор_иг','прил_сущ')
-                                            JOIN (SELECT ww.Grm FROM aiword ww
-                                            WHERE ww.Grm NOT LIKE 'СОЮЗ%' and ww.Grm NOT LIKE 'ПРЕДЛ%' and ww.Grm NOT LIKE 'МС %' GROUP BY ww.Grm) grm ON grm.Grm = w.Grm GROUP BY w.id ORDER BY a.Id, w.id;";
+        public const string Query = @"SELECT  item.TextContent AS Razdel, s.Text, doc.ProfName FROM aisentence s
+  JOIN (SELECT u.DocumentLoaderId, ddd.ProfName FROM userdocument u 
+                JOIN documentloader ddd ON ddd.Id = u.DocumentLoaderId
+                WHERE u.UserId = @userId GROUP BY 1) AS doc ON doc.DocumentLoaderId = s.DocumentLoaderId
+  JOIN (SELECT dChild.Id, d.TextContent FROM documentitem d 
+          JOIN documentitem dChild ON dChild.ParagraphId = d.Id WHERE d.IsRootItem AND TRIM(d.TextContent) IN ('Ответственность')) AS item ON item.Id = s.DocumentItemId
+  GROUP BY s.Id,doc.ProfName ";
 
 
     }

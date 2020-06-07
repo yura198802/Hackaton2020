@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Hackaton.UniversalAdapter.Adapter.AiEngine.Classes;
 using Hackaton.UniversalAdapter.Adapter.AiEngine.Interface;
@@ -31,5 +32,9 @@ namespace Module.Testing.Nunit.AdapterTest
             var models = await Service.Parse(_testString, null, null);
             Assert.IsTrue(models);
         }
+
+
+
+       
     }
 }

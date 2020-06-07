@@ -21,9 +21,13 @@ namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Classes
 
         public async Task<bool> Parse(string text, DocumentLoader documentLoader, DocumentItem documentItem)
         {
+            if (text.Length < 40)
+                return true;
             var mass = text.Trim('.').Split('.');
             foreach (var sentence in mass)
             {
+                if (sentence == " ")
+                    continue;
                 var models = await _loaderInfoAotRu.LoaderAotModel(sentence);
                 await _iAiSentence.SaveDescription(models);
                 foreach (var model in models)

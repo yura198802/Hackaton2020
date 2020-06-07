@@ -58,5 +58,19 @@ namespace Module.Testing.Nunit.AdapterTest
             var models = await Service.GetUserDocument(1);
             Assert.IsTrue(models.Any());
         }
+
+        [Test]
+        public async Task GetDocumentLoader()
+        {
+            var models = await Service.GetDocumentLoader(null);
+            Assert.IsTrue(models.Any());
+        }
+
+        [Test]
+        public async Task AddUserDocument()
+        {
+            var models = await Service.AddUserDocument(14,2);
+            Assert.IsTrue(models != null);
+        }
     }
 }

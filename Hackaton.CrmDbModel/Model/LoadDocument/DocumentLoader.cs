@@ -8,5 +8,6 @@ namespace Hackaton.CrmDbModel.Model.LoadDocument
         public string VidDoc { get; set; }
         public string Category { get; set; }
         public int FileSize { get; set; }
+        public string  ProfName { get; set; }
     }
 }

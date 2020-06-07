@@ -10,21 +10,38 @@ namespace Module.Testing.Nunit.Parser
     public class ParserTest : BaseServiceTest<IParserAdapter>
     {
         private string _path = string.Empty;
+        private string _pathDir = string.Empty;
 
         public ParserTest()
         {
-            _path = @"C:\Users\opv\Desktop\ROSATOM\data\001.rtf";
+           // var i = 0;
+            _path = @"C:\Users\Vasily\Downloads\case_28\ROSATOM\датасет\data\002.rtf";
+            _pathDir = @"C:\Users\Vasily\Downloads\case_28\ROSATOM\датасет\data\";
+           // Directory.GetFiles(_pathDir);
         }
 
         [Test]
         public async Task ParserRtf_Normal()
         {
             var loaderFile = AutoFac.Resolve<ILoaderFile>();
-            var file = await File.ReadAllBytesAsync(_path);
-            var fileRtf = await Service.ParseDocument(file);
-            var documentLoader = await loaderFile.SaveDocumentLoader(fileRtf);
-            await loaderFile.RunAotParser(documentLoader);
-            Assert.IsNotNull(fileRtf);
+            foreach (var f in Directory.GetFiles(_pathDir))
+            {
+                var file = await File.ReadAllBytesAsync(f);
+                var fileRtf = await Service.ParseDocument(file);
+                var documentLoader = await loaderFile.SaveDocumentLoader(fileRtf);
+                await loaderFile.RunAotParser(documentLoader);
+                Assert.IsNotNull(fileRtf);
+            }
+        }
+        [Test]
+        public async Task ParserRtf()
+        {
+            foreach (var f in Directory.GetFiles(_pathDir))
+            {
+                var file = await File.ReadAllBytesAsync(f);
+                var fileRtf = await Service.ParseDocument(file);
+                Assert.IsNotNull(fileRtf);
+            }
         }
     }
 }

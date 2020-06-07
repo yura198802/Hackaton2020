@@ -19,7 +19,7 @@ namespace Hackaton.WebApi.Controllers
         }
         
         [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [ProducesResponseType(403)]
@@ -27,9 +27,9 @@ namespace Hackaton.WebApi.Controllers
         {
             return Tools.CreateResult(true, "", await _userAdapter.GetUsers());
         }
-        
+
         [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [ProducesResponseType(403)]
@@ -39,27 +39,13 @@ namespace Hackaton.WebApi.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [ProducesResponseType(403)]
-        public async Task<IActionResult> EditUser(User user)
+        public async Task<IActionResult> GetUserAsync(int userId)
         {
-            return Tools.CreateResult(true, "", await _userAdapter.EditUser(user));
+            return Tools.CreateResult(true, "", await _userAdapter.GetUserModel(userId));
         }
-
+        
         [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(500)]
-        [ProducesResponseType(403)]
-        public async Task<IActionResult> DeleteUser(int userId)
-        {
-            return Tools.CreateResult(true, "", await _userAdapter.DeleteUser(userId));
-        }
-
-        [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [ProducesResponseType(403)]
@@ -67,9 +53,18 @@ namespace Hackaton.WebApi.Controllers
         {
             return Tools.CreateResult(true, "", await _userAdapter.GetUserDocument(userId));
         }
-        
         [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(500)]
+        [ProducesResponseType(403)]
+        public async Task<IActionResult> GetDocumentLoader(int? userId)
+        {
+            return Tools.CreateResult(true, "", await _userAdapter.GetDocumentLoader(userId)); 
+        }
+
+        [HttpPost]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [ProducesResponseType(403)]
@@ -79,13 +74,13 @@ namespace Hackaton.WebApi.Controllers
         }
 
         [HttpPost]
-        [ProducesResponseType(200, Type = typeof(bool))]
+        [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(500)]
         [ProducesResponseType(403)]
-        public async Task<IActionResult> AddUserDocument(int userId, int docId)
+        public async Task<IActionResult> AddUserDocument(int userId, int profId)
         {
-            return Tools.CreateResult(true, "", await _userAdapter.AddUserDocument(userId, docId));
+            return Tools.CreateResult(true, "", await _userAdapter.AddUserDocument(profId, userId));
         }
 
 

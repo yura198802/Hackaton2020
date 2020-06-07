@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp2.2</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <Configurations>Debug;Release;Anonym</Configurations>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -69,6 +70,11 @@
     <None Update="SetPawwswordReset.html">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Adapter\Parser\Formats\" />
+    <Folder Include="Adapter\Parser\Helper\Utils\" />
   </ItemGroup>
 
 </Project>

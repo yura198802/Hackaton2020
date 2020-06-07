@@ -29,12 +29,16 @@ namespace Hackaton.UniversalAdapter.Adapter.User
             var result = new ResultCrmDb();
             try
             {
+                if (string.IsNullOrWhiteSpace(user.Account))
+                    return result;
+
+
                 _wordDbContext.Add(user);
                 await _wordDbContext.SaveChangesAsync();
             }
             catch (Exception e)
             {
-                result.AddError("-",e.Message);
+                result.AddError("-", e.Message);
             }
 
             return result;
@@ -54,6 +58,11 @@ namespace Hackaton.UniversalAdapter.Adapter.User
             }
 
             return result;
+        }
+
+        public async Task<CrmDbModel.Model.LoadDocument.User> GetUserModel(int userId)
+        {
+            return await _wordDbContext.User.FirstOrDefaultAsync(f => f.Id == userId);
         }
 
 
@@ -77,15 +86,39 @@ namespace Hackaton.UniversalAdapter.Adapter.User
 
         public async Task<IEnumerable<UserDocumentDto>> GetUserDocument(int userId)
         {
-            await _wordDbContext.UserDocument.LoadAsync();
-            var query = await _wordDbContext.UserDocument.Where(f => f.UserId == userId).ToListAsync();
-            return query.Select(s => new UserDocumentDto
+            return await _wordDbContext.UserDocument.Where(f => f.UserId == userId).Join(_wordDbContext.DocumentLoader, document => document.DocumentLoaderId,
+                loader => loader.Id, (document, loader) => new UserDocumentDto()
+                {
+                    ProfId = loader.Id,
+                    ProfName = loader.ProfName,
+                    ProfDoc = loader.Name,
+                    Id = document.Id
+                }).ToListAsync();
+        }
+
+        public async Task<IEnumerable<DocumentLoader>> GetDocumentLoader(int? userId)
+        {
+            if (userId != null)
             {
-                NameDoc = s.DocumentLoader?.Name,
-                Category = s.DocumentLoader?.Category,
-                VidDoc = s.DocumentLoader?.VidDoc,
-                Id = s.Id
-            });
+                return _wordDbContext.DocumentLoader.GroupJoin(
+                    _wordDbContext.UserDocument,
+                    document => document.Id,
+                    userDoc => userDoc.DocumentLoaderId, (doc, uDoc) => new
+                    {
+                        doc,
+                        uDoc
+
+                    }).SelectMany
+                (
+                    args => args.uDoc.DefaultIfEmpty(),
+                    (doc, udoc) => new
+                    {
+                        doc,
+                        IsVisible = udoc == null
+                    }
+                ).Where(f => f.IsVisible).Select(s => s.doc.doc);
+            }
+            return await _wordDbContext.DocumentLoader.ToListAsync();
         }
 
         public async Task<ResultCrmDb> DeleteUserDocument(int userDocId)
@@ -109,7 +142,10 @@ namespace Hackaton.UniversalAdapter.Adapter.User
             var result = new ResultCrmDb();
             try
             {
-                var model = new UserDocument() { DocumentLoaderId = docId, UserId = userId};
+                var model = await _wordDbContext.UserDocument.FirstOrDefaultAsync(f => f.UserId == userId && f.DocumentLoaderId == docId);
+                if (model != null)
+                    return result;
+                model = new UserDocument() { DocumentLoaderId = docId, UserId = userId };
                 _wordDbContext.Add(model);
                 await _wordDbContext.SaveChangesAsync();
             }

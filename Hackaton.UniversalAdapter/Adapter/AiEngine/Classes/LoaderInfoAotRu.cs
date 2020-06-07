@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hackaton.UniversalAdapter.Adapter.AiEngine.Interface;
@@ -21,12 +22,20 @@ namespace Hackaton.UniversalAdapter.Adapter.AiEngine.Classes
         /// <returns>Модель</returns>
         public Task<List<AotModel>> LoaderAotModel(string content)
         {
-            RestClient client = new RestClient(_host);
-            var request = new RestRequest(client.BaseUrl, Method.GET, DataFormat.Json);
-            CreateParams(request, content);
-            var response = client.Get(request);
-            var models = AotModel.FromJson(response.Content);
-            return Task.FromResult(models[0].ToList());
+            try
+            {
+                RestClient client = new RestClient(_host);
+                var request = new RestRequest(client.BaseUrl, Method.GET, DataFormat.Json);
+                CreateParams(request, content);
+                var response = client.Get(request);
+                var models = AotModel.FromJson(response.Content);
+                return Task.FromResult(models[0].ToList());
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+            
         }
 
 

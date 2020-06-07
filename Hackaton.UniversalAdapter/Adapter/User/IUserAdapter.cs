@@ -1,7 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Hackaton.CrmDbModel.Model.LoadDocument;
 using Hackaton.CrmDbModel.ModelCrm.Core;
 using Hackaton.CrmDbModel.ModelDto;
 
@@ -16,6 +15,8 @@ namespace Hackaton.UniversalAdapter.Adapter.User
         Task<IEnumerable<UserDocumentDto>> GetUserDocument(int userId);
         Task<ResultCrmDb> DeleteUserDocument(int userDocId);
         Task<ResultCrmDb> AddUserDocument(int docId, int userId);
+        Task<IEnumerable<DocumentLoader>> GetDocumentLoader(int? userId);
+        Task<CrmDbModel.Model.LoadDocument.User> GetUserModel(int userId);
 
 
     }

@@ -19,16 +19,15 @@ namespace Hackaton.CrmDbModel.ModelDto.Parser
         /// Уточнение вида док-та
         /// </summary>
         public string Category { get; set; }
-        //public string FileSize { get; set; }
-        //TODO и другие свойства
-
         public List<ItemDto> Items { get; set; }
         public int FileSize { get; set; }
+        public string ProfName { get; set; }
     }
 
     public class ItemDto
     {
         public ItemDto ParentId { get; set; }
+        public ItemDto ParagraphId { get; set; }
         public string TextContent { get; set; }
         public string  Number { get; set; }
         public bool IsRoot { get; set; }
@@ -53,7 +52,4 @@ namespace Hackaton.CrmDbModel.ModelDto.Parser
             };
         }
     }
-
-
-
 }
